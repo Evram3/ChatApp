@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Socket.IO chat</title>
+    <style>
+        body {
+            margin: 0;
+            padding-bottom: 3rem;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        #form {
+            background: rgba(0, 0, 0, 0.15);
+            padding: 0.25rem;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            height: 3rem;
+            box-sizing: border-box;
+            backdrop-filter: blur(10px);
+        }
+
+        #input {
+            border: none;
+            padding: 0 1rem;
+            flex-grow: 1;
+            border-radius: 2rem;
+            margin: 0.25rem;
+        }
+
+        #input:focus {
+            outline: none;
+        }
+
+        #form>button {
+            background: #333;
+            border: none;
+            padding: 0 1rem;
+            margin: 0.25rem;
+            border-radius: 3px;
+            outline: none;
+            color: #fff;
+        }
+
+        #messages {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        #messages>li {
+            padding: 0.5rem 1rem;
+        }
+
+        #messages>li:nth-child(odd) {
+            background: #efefef;
+        }
+    </style>
+</head>
+
+<body>
+    <ul id="messages"></ul>
+    <form id="form" action="">
+        <input id="input" autocomplete="off" /><button>Send</button>
+        <p id="typing_status"></p>
+    </form>
+
+    <!--Socket Client Lab-->
+    <!--
+    El JS ele fel html bymsl el frontEnd
+    Ele fel JS bymsl el backend
+    -->
+    <script src="https://cdn.socket.io/4.8.0/socket.io.min.js"
+        integrity="sha384-OoIbkvzsFFQAG88r+IqMAjyOtYDPGO0cqK5HF5Uosdy/zUEGySeAzytENMDynREd"
+        crossorigin="anonymous"></script>
+    <!--Package btnzl m3 el socket.io library-->
+    <!--Package ghza m3mola ll frontend 34an t5le el server y connect-->
+    <script>
+        const socket=io("http://localhost:3000");
+        //  Function io nzlha fe variable asmoh socket
+
+        const form =document.getElementById('form');
+        const input=document.getElementById('input');
+        const messages = document.getElementById('messages');
+        const typingStatus=document.getElementById('typing_status');
+
+        form.addEventListener('submit',(e)=>{
+            //  lama bdws 3ala button el submit
+            e.preventDefault();
+            //  Don't refresh page
+            if(input.value){
+                //  Lw el input fe value
+                socket.emit('message',input.value);
+                //  5od el value bta3ha w a3mlha socket emit
+                //  El client 3ml emit l event asmoh message, hyb3t m3aha el input.value
+                input.value='';
+            }
+        });
+
+        socket.on('send_messages_to_all_users',(data)=>{
+            console.log(" data from 'send_messages_to_all_users' is",data);
+            //  Lama b2a el socket(server) ysm3 event 'send_messages_to_all_users'
+
+            const item = document.createElement('li');
+            item.textContent = data
+            messages.appendChild(item);
+            window.scrollTo(0,document.body.scrollHeight);
+        });
+
+        input.addEventListener("keydown",()=>{
+            //  Lama ahot ade 3ala el input
+            socket.emit('typing');
+            //  emit event asmkh "Typing" mn 8er data
+        });
+
+        socket.on("show_typing_status",()=>{
+            // Awl ma tsm3 "show_typing_status"
+            typingStatus.innerHTML = 'Client is typing...';
+            //  Atb3 "Client is typing"
+            //  Tb3n m4 htzhr ll socket ele b3t
+        })
+
+        input.addEventListener("keyup", () => {
+                //  Lama a4el ade 3ala el input
+                //  Lama abtl ktaba
+                socket.emit('stop_typing');
+                //  emit event asmkh "stop_typing" mn 8er data
+            });
+
+        socket.on('clear_typing_status',()=>{
+            //  Lama tsm3 event 'clear_typing_status'
+            setTimeout(()=>{
+                typingStatus.innerHTML='';
+            },2000);
+            //  Fadde paragraph el typingStatus after 2 s
+        });
+        
+    </script>
+</body>
+
+</html>
